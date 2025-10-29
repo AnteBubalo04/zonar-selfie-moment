@@ -57,11 +57,21 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Zonar custom colors
+        gold: "hsl(var(--gold))",
+        'gold-glow': "hsl(var(--gold-glow))",
+        anthracite: "hsl(var(--anthracite))",
+        'anthracite-light': "hsl(var(--anthracite-light))",
+        pearl: "hsl(var(--pearl))",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        display: ['Playfair Display', 'serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {
@@ -80,10 +90,44 @@ export default {
             height: "0",
           },
         },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% center' },
+          '100%': { backgroundPosition: '200% center' },
+        },
+        'bounce-in': {
+          '0%': { 
+            transform: 'scale(0.8) translateY(-50px)',
+            opacity: '0',
+          },
+          '60%': { 
+            transform: 'scale(1.05) translateY(0)',
+            opacity: '1',
+          },
+          '100%': { 
+            transform: 'scale(1) translateY(0)',
+            opacity: '1',
+          },
+        },
+        'pulse-gold': {
+          '0%, 100%': { 
+            boxShadow: '0 0 0 0 hsl(42 45% 52% / 0.7)',
+          },
+          '50%': { 
+            boxShadow: '0 0 0 20px hsl(42 45% 52% / 0)',
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        float: 'float 3s ease-in-out infinite',
+        shimmer: 'shimmer 3s linear infinite',
+        'bounce-in': 'bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'pulse-gold': 'pulse-gold 2s ease-in-out infinite',
       },
     },
   },
