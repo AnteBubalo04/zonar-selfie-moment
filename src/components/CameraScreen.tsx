@@ -128,17 +128,19 @@ export const CameraScreen = ({ onCapture }: CameraScreenProps) => {
           </div>
         </div>
 
-        {/* Countdown display */}
+        {/* Countdown display - slim gold evaporating numbers */}
         {countdown !== null && countdown > 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse-gold"></div>
-              <Card className="relative bg-primary/90 backdrop-blur-xl border-4 border-accent w-48 h-48 rounded-full flex items-center justify-center shadow-[var(--shadow-glow)]">
-                <span className="font-display text-9xl font-bold text-primary-foreground">
-                  {countdown}
-                </span>
-              </Card>
-            </div>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span 
+              key={countdown}
+              className="font-display text-[20rem] font-thin text-primary animate-evaporate"
+              style={{ 
+                textShadow: '0 0 40px hsl(42 55% 58% / 0.6)',
+                fontWeight: 100
+              }}
+            >
+              {countdown}
+            </span>
           </div>
         )}
 

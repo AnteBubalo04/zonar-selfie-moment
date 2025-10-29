@@ -1,12 +1,14 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 
 interface ScanningScreenProps {
-  onScanned: (uid: string) => void;
+  uid: string;
+  onVerified: () => void;
 }
 
-export const ScanningScreen = ({ onScanned }: ScanningScreenProps) => {
+export const ScanningScreen = ({ uid, onVerified }: ScanningScreenProps) => {
+  const [status, setStatus] = useState<'checking' | 'verified'>('checking');
   const [dots, setDots] = useState("");
 
   useEffect(() => {
@@ -16,54 +18,56 @@ export const ScanningScreen = ({ onScanned }: ScanningScreenProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-trigger with mock UID after 2 seconds for demo
   useEffect(() => {
+    // Simulate verification
     const timer = setTimeout(() => {
-      onScanned("387598235"); // Mock UID for demo
+      setStatus('verified');
+      setTimeout(() => {
+        onVerified();
+      }, 1500);
     }, 2000);
     return () => clearTimeout(timer);
-  }, [onScanned]);
+  }, [onVerified]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-anthracite via-anthracite-light to-anthracite flex items-center justify-center p-8">
       <Card className="w-full max-w-xl bg-card/50 backdrop-blur-xl border-2 border-primary/20 shadow-[var(--shadow-elegant)]">
         <div className="p-16 text-center space-y-8">
-          {/* Animated loader */}
+          {/* Animated loader or success icon */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-32 h-32 rounded-full bg-primary/10 animate-pulse-gold"></div>
             </div>
             <div className="relative">
-              <Loader2 className="w-32 h-32 text-primary animate-spin mx-auto" strokeWidth={1.5} />
+              {status === 'checking' ? (
+                <Loader2 className="w-32 h-32 text-primary animate-spin mx-auto" strokeWidth={1.5} />
+              ) : (
+                <CheckCircle2 className="w-32 h-32 text-primary mx-auto animate-scale-in" strokeWidth={1.5} />
+              )}
             </div>
           </div>
 
           {/* Status text */}
           <div className="space-y-3">
-            <h2 className="font-display text-3xl font-bold text-foreground">
-              Očitavanje kartice{dots}
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Molimo prislonite vašu hotelsku karticu na čitač
-            </p>
-          </div>
-
-          {/* Card icon visual */}
-          <div className="flex justify-center">
-            <div className="w-48 h-32 bg-gradient-to-br from-primary/20 to-accent/10 rounded-xl border-2 border-primary/30 shadow-lg flex items-center justify-center">
-              <svg 
-                viewBox="0 0 100 60" 
-                className="w-32 h-20 text-primary/40"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="10" y="10" width="80" height="40" rx="4" />
-                <rect x="15" y="18" width="30" height="6" rx="2" />
-                <line x1="15" y1="32" x2="45" y2="32" />
-                <line x1="15" y1="38" x2="55" y2="38" />
-              </svg>
-            </div>
+            {status === 'checking' ? (
+              <>
+                <h2 className="font-display text-3xl font-bold text-foreground">
+                  Making sure that you are our guest{dots}
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Verifying UID: {uid}
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="font-display text-4xl font-bold text-primary animate-bounce-in">
+                  YOU ARE ONE OF OURS!
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Get ready for your Liftie...
+                </p>
+              </>
+            )}
           </div>
         </div>
       </Card>

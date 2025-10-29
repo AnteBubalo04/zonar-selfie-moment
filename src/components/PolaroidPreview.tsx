@@ -42,12 +42,12 @@ export const PolaroidPreview = ({ data, onComplete }: PolaroidPreviewProps) => {
       ctx.fillRect(x, y, 1, 1);
     }
 
-    // Photos section (3 photos stacked)
+    // Photos section (3 photos stacked vertically)
     const photoMargin = 80;
     const photoWidth = width - (photoMargin * 2);
-    const photoHeight = 480;
-    const photoSpacing = 40;
-    let yPos = photoMargin + 100;
+    const photoHeight = 400;
+    const photoSpacing = 60;
+    const startY = 180;
 
     // Load and draw images
     const imagePromises = data.images.slice(0, 3).map((src, index) => {
@@ -55,12 +55,14 @@ export const PolaroidPreview = ({ data, onComplete }: PolaroidPreviewProps) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {
-          const currentY = yPos + (index * (photoHeight + photoSpacing));
+          const currentY = startY + (index * (photoHeight + photoSpacing));
+          
+          ctx.save();
           
           // Photo shadow
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-          ctx.shadowBlur = 20;
-          ctx.shadowOffsetY = 10;
+          ctx.shadowColor = 'rgba(167, 133, 63, 0.3)';
+          ctx.shadowBlur = 30;
+          ctx.shadowOffsetY = 15;
           
           // Draw photo with rounded corners
           const radius = 20;
@@ -77,16 +79,31 @@ export const PolaroidPreview = ({ data, onComplete }: PolaroidPreviewProps) => {
           ctx.closePath();
           ctx.clip();
           
-          ctx.drawImage(img, photoMargin, currentY, photoWidth, photoHeight);
+          // Calculate aspect ratio fit
+          const imgAspect = img.width / img.height;
+          const photoAspect = photoWidth / photoHeight;
           
-          // Reset shadow and clip
-          ctx.shadowColor = 'transparent';
+          let drawWidth, drawHeight, offsetX, offsetY;
+          
+          if (imgAspect > photoAspect) {
+            drawHeight = photoHeight;
+            drawWidth = photoHeight * imgAspect;
+            offsetX = photoMargin - (drawWidth - photoWidth) / 2;
+            offsetY = currentY;
+          } else {
+            drawWidth = photoWidth;
+            drawHeight = photoWidth / imgAspect;
+            offsetX = photoMargin;
+            offsetY = currentY - (drawHeight - photoHeight) / 2;
+          }
+          
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+          
           ctx.restore();
-          ctx.save();
           
           resolve();
         };
-        img.onerror = () => resolve(); // Continue even if image fails
+        img.onerror = () => resolve();
         img.src = src;
       });
     });
@@ -95,27 +112,34 @@ export const PolaroidPreview = ({ data, onComplete }: PolaroidPreviewProps) => {
       // Brand bar at bottom
       const brandBarY = height - 200;
       
-      // Gold gradient background
-      const gradient = ctx.createLinearGradient(0, brandBarY, 0, brandBarY + 180);
-      gradient.addColorStop(0, 'rgba(167, 133, 63, 0.15)');
-      gradient.addColorStop(1, 'rgba(167, 133, 63, 0.05)');
+      // Gold gradient border
+      const borderGradient = ctx.createLinearGradient(0, brandBarY - 5, 0, brandBarY);
+      borderGradient.addColorStop(0, 'rgba(167, 133, 63, 0.6)');
+      borderGradient.addColorStop(1, 'rgba(167, 133, 63, 0.2)');
+      ctx.fillStyle = borderGradient;
+      ctx.fillRect(0, brandBarY - 5, width, 5);
+      
+      // Brand bar background
+      const gradient = ctx.createLinearGradient(0, brandBarY, 0, brandBarY + 200);
+      gradient.addColorStop(0, 'rgba(167, 133, 63, 0.08)');
+      gradient.addColorStop(1, 'rgba(167, 133, 63, 0.03)');
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, brandBarY, width, 180);
+      ctx.fillRect(0, brandBarY, width, 200);
 
       // Brand text
       ctx.fillStyle = '#A7853F';
-      ctx.font = 'bold 56px "Playfair Display", serif';
+      ctx.font = 'bold 64px "Playfair Display", serif';
       ctx.textAlign = 'center';
-      ctx.fillText('ZONAR', width / 2, brandBarY + 70);
+      ctx.fillText('ZONAR', width / 2, brandBarY + 75);
       
-      ctx.font = '28px "Inter", sans-serif';
+      ctx.font = '32px "Inter", sans-serif';
       ctx.letterSpacing = '8px';
-      ctx.fillText('ZAGREB', width / 2, brandBarY + 110);
+      ctx.fillText('ZAGREB', width / 2, brandBarY + 115);
 
       // Watermark
-      ctx.font = '20px "Inter", sans-serif';
+      ctx.font = '22px "Inter", sans-serif';
       ctx.fillStyle = 'rgba(167, 133, 63, 0.5)';
-      ctx.fillText('#ZonarMoments', width / 2, brandBarY + 150);
+      ctx.fillText('#ZonarMoments', width / 2, brandBarY + 160);
 
       // Save final image
       finalImageRef.current = canvas.toDataURL('image/png', 0.95);
@@ -156,46 +180,30 @@ export const PolaroidPreview = ({ data, onComplete }: PolaroidPreviewProps) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-anthracite via-anthracite-light to-anthracite flex items-center justify-center p-8">
-      <Card className="w-full max-w-xl bg-card/50 backdrop-blur-xl border-2 border-primary/30 shadow-[var(--shadow-elegant)] animate-bounce-in">
-        <div className="p-8 space-y-6">
-          {/* Preview */}
-          <div className="relative">
-            <canvas
-              ref={canvasRef}
-              className="w-full rounded-2xl shadow-[var(--shadow-gold)]"
-            />
-          </div>
+      <div className="w-full max-w-xl text-center space-y-8">
+        {/* Title */}
+        <h1 className="font-display text-6xl font-bold text-primary animate-bounce-in">
+          YOUR LIFTIE!
+        </h1>
 
-          {/* Actions */}
-          <div className="space-y-4">
-            <p className="text-center text-foreground text-lg">
-              Vaš <span className="text-primary font-semibold">Zonar Lift Selfie</span> je spreman!
-            </p>
-            
-            <div className="flex gap-3">
-              <Button
-                onClick={handleDownload}
-                variant="outline"
-                className="flex-1 border-2 border-primary/30 hover:bg-primary/10 rounded-xl py-6"
-              >
-                <Download className="mr-2 h-5 w-5" />
-                Preuzmi
-              </Button>
-              <Button
-                onClick={handleShare}
-                className="flex-1 bg-primary hover:bg-accent text-primary-foreground rounded-xl py-6 shadow-[var(--shadow-gold)]"
-              >
-                <Share2 className="mr-2 h-5 w-5" />
-                Podijeli
-              </Button>
-            </div>
-
-            <p className="text-center text-muted-foreground text-sm">
-              Automatski poslano na {data.guest.phone || data.guest.email}
-            </p>
-          </div>
+        {/* Polaroid Preview with slide-in animation */}
+        <div className="relative animate-slide-in-up">
+          <canvas
+            ref={canvasRef}
+            className="w-full rounded-3xl shadow-[var(--shadow-gold)] border-4 border-primary/20"
+          />
         </div>
-      </Card>
+
+        {/* Bottom message */}
+        <div className="space-y-2 animate-fade-in">
+          <p className="text-pearl text-2xl font-semibold">
+            CHECK YOUR WHATSAPP/EMAIL
+          </p>
+          <p className="text-muted-foreground">
+            Sent to: {data.guest.phone || data.guest.email}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

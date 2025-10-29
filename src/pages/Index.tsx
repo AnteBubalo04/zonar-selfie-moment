@@ -16,21 +16,22 @@ const Index = () => {
   const [polaroidData, setPolaroidData] = useState<PolaroidData | null>(null);
   const { toast } = useToast();
 
-  const handleStart = () => {
-    setStep('scanning');
-  };
+  const [scannedUid, setScannedUid] = useState("");
 
-  const handleScanned = async (uid: string) => {
+  const handleScan = async (uid: string) => {
+    setScannedUid(uid);
+    setStep('scanning');
+
     try {
       const data = await mockScanCard(uid);
       
       if (!data || !data.guest) {
         toast({
-          title: "Kartica nije prepoznata",
-          description: "Molimo pokušajte ponovno ili kontaktirajte recepciju.",
+          title: "Card not recognized",
+          description: "Please try again or contact reception.",
           variant: "destructive",
         });
-        setStep('welcome');
+        setTimeout(() => setStep('welcome'), 2000);
         return;
       }
 
@@ -38,24 +39,28 @@ const Index = () => {
       
       if (!data.guest.consent) {
         toast({
-          title: "Privola nije dana",
-          description: "Potrebna je privola za korištenje Lift Selfie usluge.",
+          title: "Consent not provided",
+          description: "Consent is required for Lift Selfie service.",
           variant: "destructive",
         });
         setTimeout(() => setStep('welcome'), 3000);
         return;
       }
 
-      setStep('consent');
+      // Will be handled by ScanningScreen's onVerified callback
     } catch (error) {
       console.error("Scan error:", error);
       toast({
-        title: "Greška",
-        description: "Došlo je do greške. Pokušajte ponovno.",
+        title: "Error",
+        description: "An error occurred. Please try again.",
         variant: "destructive",
       });
-      setStep('welcome');
+      setTimeout(() => setStep('welcome'), 2000);
     }
+  };
+
+  const handleVerified = () => {
+    setStep('consent');
   };
 
   const handleConsent = (accepted: boolean) => {
@@ -94,11 +99,10 @@ const Index = () => {
   };
 
   const handlePreviewComplete = () => {
-    toast({
-      title: "Poslano!",
-      description: "Vaš Lift Selfie je uspješno dostavljen.",
-    });
-    setStep('complete');
+    setStep('welcome');
+    setRoomData(null);
+    setPolaroidData(null);
+    setScannedUid("");
   };
 
   const handleReset = () => {
@@ -110,10 +114,10 @@ const Index = () => {
   // Render appropriate screen
   switch (step) {
     case 'welcome':
-      return <WelcomeScreen onStart={handleStart} />;
+      return <WelcomeScreen onScan={handleScan} />;
     
     case 'scanning':
-      return <ScanningScreen onScanned={handleScanned} />;
+      return <ScanningScreen uid={scannedUid} onVerified={handleVerified} />;
     
     case 'consent':
       return roomData?.guest ? (
